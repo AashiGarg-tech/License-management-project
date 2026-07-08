@@ -16,6 +16,7 @@ import LicenseDetails from "./pages/LicenseDetails";
 import LabWiseLicenses from "./pages/LabWiseLicenses";
 import ModuleUsage from "./pages/ModuleUsage";
 import ModuleVisualization from "./pages/ModuleVisualization";
+import MSCDashboard from "./pages/MSCDashboard";
 
 import {
   AuthProvider,
@@ -308,7 +309,14 @@ export default function App() {
               </div>
             }
           />
-
+<Route
+  path="/mscdashboard"
+  element={
+    <Private>
+      <MSCDashboard />
+    </Private>
+  }
+/>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
