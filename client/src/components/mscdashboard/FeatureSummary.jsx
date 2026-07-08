@@ -5,7 +5,7 @@ const FeatureSummary = ({ selectedPeriod }) => {
   const data = featureSummary[selectedPeriod];
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 h-full">
+    <div className="bg-white rounded-2xl shadow-sm p-6">
 
       <div className="flex justify-between items-center mb-5">
 

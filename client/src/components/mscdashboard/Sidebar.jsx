@@ -1,22 +1,20 @@
 import React from "react";
+import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Activity,
-  FileBarChart2,
-  Users,
-  Calendar,
-  Settings,
 } from "lucide-react";
 
 const menuItems = [
   {
     title: "Dashboard",
     icon: LayoutDashboard,
-    active: true,
+    path: "/mscdashboard",
   },
   {
     title: "Predictions (XGBoost)",
     icon: Activity,
+    path: "/prediction",
   },
 ];
 
@@ -43,7 +41,6 @@ const Sidebar = () => {
             License Analytics
           </h1>
 
-
         </div>
 
       </div>
@@ -56,29 +53,34 @@ const Sidebar = () => {
           const Icon = item.icon;
 
           return (
-            <button
+            <NavLink
               key={item.title}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition mb-2
-                ${
-                  item.active
+              to={item.path}
+              className={({ isActive }) =>
+                `w-full flex items-center gap-3 px-4 py-3 rounded-xl transition mb-2 ${
+                  isActive
                     ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600 font-semibold"
                     : "text-slate-600 hover:bg-slate-100"
-                }`}
+                }`
+              }
             >
-              <Icon
-                size={21}
-                className={
-                  item.active
-                    ? "text-blue-600"
-                    : "text-slate-500"
-                }
-              />
+              {({ isActive }) => (
+                <>
+                  <Icon
+                    size={21}
+                    className={
+                      isActive
+                        ? "text-blue-600"
+                        : "text-slate-500"
+                    }
+                  />
 
-              <span className="text-base">
-                {item.title}
-              </span>
-
-            </button>
+                  <span className="text-base">
+                    {item.title}
+                  </span>
+                </>
+              )}
+            </NavLink>
           );
         })}
 

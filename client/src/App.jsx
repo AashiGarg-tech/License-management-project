@@ -17,7 +17,7 @@ import LabWiseLicenses from "./pages/LabWiseLicenses";
 import ModuleUsage from "./pages/ModuleUsage";
 import ModuleVisualization from "./pages/ModuleVisualization";
 import MSCDashboard from "./pages/MSCDashboard";
-
+import PredictionDashboard from "./pages/PredictionDashboard";
 import {
   AuthProvider,
   useAuth,
@@ -314,6 +314,14 @@ export default function App() {
   element={
     <Private>
       <MSCDashboard />
+    </Private>
+  }
+/>
+<Route
+  path="/prediction"
+  element={
+    <Private>
+      <PredictionDashboard />
     </Private>
   }
 />
