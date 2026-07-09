@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   ResponsiveContainer,
   BarChart,
@@ -9,8 +10,6 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts";
-
-import { moduleData } from "../../data/dashboardData";
 
 const colors = [
   "#2563EB",
@@ -24,7 +23,27 @@ const colors = [
 ];
 
 const TopModulesChart = ({ selectedPeriod }) => {
-  const data = moduleData[selectedPeriod];
+    const [data, setData] = useState([]);
+
+    useEffect(() => {
+      fetchModules();
+    }, [selectedPeriod]);
+    
+    const fetchModules = async () => {
+      try {
+    
+        const response = await axios.get(
+          `http://localhost:5001/api/dashboard/top-modules?period=${selectedPeriod}`
+        );
+    
+        setData(response.data);
+    
+      } catch (err) {
+    
+        console.error(err);
+    
+      }
+    };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6">

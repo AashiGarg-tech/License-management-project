@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
 import {
   ResponsiveContainer,
   PieChart,
@@ -7,13 +9,40 @@ import {
   Tooltip,
 } from "recharts";
 
-import {
-  pieData,
-  pieColors,
-} from "../../data/dashboardData";
+const pieColors = [
+    "#2563EB", // Blue - OUT
+    "#22C55E", // Green - IN
+    "#EF4444", // Red - DENIED
+    "#F59E0B", // Amber - QUEUED
+    "#8B5CF6", // Purple - DEQUEUED
+  ];
 
 const EventDistribution = ({ selectedPeriod }) => {
-    const data = pieData[selectedPeriod];
+
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    fetchDistribution();
+  }, [selectedPeriod]);
+
+  const fetchDistribution = async () => {
+
+    try {
+
+      const response = await axios.get(
+        `http://localhost:5001/api/dashboard/event-distribution?period=${selectedPeriod}`
+      );
+
+      setData(response.data);
+
+    } catch (err) {
+
+      console.error(err);
+
+    }
+
+  };
+
   const totalEvents = data.reduce(
     (sum, item) => sum + item.value,
     0
@@ -27,8 +56,6 @@ const EventDistribution = ({ selectedPeriod }) => {
       </h2>
 
       <div className="flex items-center justify-center gap-8">
-
-        {/* Donut Chart */}
 
         <div className="relative w-[240px] h-[240px] flex-shrink-0">
 
@@ -46,14 +73,13 @@ const EventDistribution = ({ selectedPeriod }) => {
                 paddingAngle={1}
                 stroke="#fff"
                 strokeWidth={2}
-                activeShape={null}
               >
 
                 {data.map((entry, index) => (
 
                   <Cell
-                    key={index}
-                    fill={pieColors[index]}
+                    key={entry.name}
+                    fill={pieColors[index % pieColors.length]}
                   />
 
                 ))}
@@ -78,8 +104,6 @@ const EventDistribution = ({ selectedPeriod }) => {
 
           </ResponsiveContainer>
 
-          {/* Center Text */}
-
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
 
             <p className="text-xs text-slate-500">
@@ -94,17 +118,16 @@ const EventDistribution = ({ selectedPeriod }) => {
 
         </div>
 
-        {/* Legend */}
-
         <div className="flex-1">
 
           <div className="space-y-4">
 
             {data.map((item, index) => {
 
-              const percentage = (
-                (item.value / totalEvents) * 100
-              ).toFixed(1);
+              const percentage =
+                totalEvents === 0
+                  ? 0
+                  : ((item.value / totalEvents) * 100).toFixed(1);
 
               return (
 
@@ -118,11 +141,12 @@ const EventDistribution = ({ selectedPeriod }) => {
                     <div
                       className="w-4 h-4 rounded-full"
                       style={{
-                        backgroundColor: pieColors[index],
+                        backgroundColor:
+                          pieColors[index % pieColors.length],
                       }}
                     />
 
-<span className="w-20 text-sm font-medium text-slate-700">
+                    <span className="w-20 text-sm font-medium text-slate-700">
                       {item.name}
                     </span>
 

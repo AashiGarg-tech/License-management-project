@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
 import {
   ResponsiveContainer,
   AreaChart,
@@ -9,10 +11,29 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import { trendData } from "../../data/dashboardData";
-
 const TrendChart = ({ selectedPeriod }) => {
-  const data = trendData[selectedPeriod];
+
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    fetchTrend();
+  }, [selectedPeriod]);
+
+  const fetchTrend = async () => {
+    try {
+
+      const response = await axios.get(
+        `http://localhost:5001/api/dashboard/trend?period=${selectedPeriod}`
+      );
+
+      setData(response.data);
+
+    } catch (err) {
+
+      console.error("Trend Error:", err);
+
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -62,7 +83,6 @@ const TrendChart = ({ selectedPeriod }) => {
               x2="0"
               y2="1"
             >
-
               <stop
                 offset="5%"
                 stopColor="#2563EB"
