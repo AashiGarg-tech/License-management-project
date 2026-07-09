@@ -10,7 +10,6 @@ import {
   Legend,
 } from "recharts";
 
-import { predictionTrend } from "../../data/predictionData";
 const lineColors = {
     ADAMS_View: "#2563EB",
     Patran: "#10B981",
@@ -21,12 +20,32 @@ const lineColors = {
     Nastran: "#F97316",
     Adams_Post: "#EC4899",
   };
-const PredictionTrend = ({
+  const PredictionTrend = ({
     selectedPeriod,
     selectedModules,
+    trendData = [],
+    loading,
   }) => {
-  const data = predictionTrend[selectedPeriod];
+  const data = trendData;
+  if (loading) {
 
+    return (
+      <div className="bg-white rounded-2xl shadow-sm p-6 h-[520px] flex items-center justify-center">
+        Loading predictions...
+      </div>
+    );
+  
+  }
+  
+  if (data.length === 0) {
+  
+    return (
+      <div className="bg-white rounded-2xl shadow-sm p-6 h-[520px] flex items-center justify-center">
+        No trend data available.
+      </div>
+    );
+  
+  }
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6">
 

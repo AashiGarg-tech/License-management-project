@@ -5,57 +5,121 @@ import Sidebar from "../components/mscdashboard/Sidebar";
 
 import PredictionHeader from "../components/xgboost/PredictionHeader";
 import PredictionTrend from "../components/xgboost/PredictionTrend";
-import ModuleSelector from "../components/xgboost/ModuleSelector";
-import FuturePredictions from "../components/xgboost/FuturePredictions";
+import ModuleOverview from "../components/xgboost/ModuleOverview";
 import RecommendationCard from "../components/xgboost/RecommendationCard";
 import PredictionSummary from "../components/xgboost/PredictionSummary";
 import ModuleMultiSelect from "../components/xgboost/ModuleMultiSelect";
 
 const PredictionDashboard = () => {
+
   const [selectedPeriod, setSelectedPeriod] = useState("Daily");
 
-  const [selectedModules, setSelectedModules] = useState([
-    "ADAMS_View",
-    "Patran",
-    "Solver",
-    "Marc",
-  ]);
+  const [selectedModules, setSelectedModules] = useState([]);
 
-  const [selectedModule, setSelectedModule] =
-    useState("ADAMS_View");
+  const [selectedModule, setSelectedModule] = useState("");
 
   const [predictions, setPredictions] = useState([]);
+  const [trendData, setTrendData] = useState([]);
+  const [metrics, setMetrics] = useState({});
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPredictions();
-  }, []);
+  }, [selectedPeriod]);
+
+  useEffect(() => {
+
+    if (predictions.length === 0) {
+      setSelectedModule("");
+      setSelectedModules([]);
+      return;
+    }
+
+    if (
+      !predictions.some(
+        (item) => item.module === selectedModule
+      )
+    ) {
+      setSelectedModule(predictions[0].module);
+    }
+
+    setSelectedModules(
+      predictions
+        .slice(0, 4)
+        .map((item) => item.module)
+    );
+
+  }, [predictions]);
 
   const fetchPredictions = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:5001/api/xgboost/predictions"
-      );
 
-      setPredictions(response.data);
+    try {
+  
+      setLoading(true);
+  
+      const [predictionResponse, trendResponse] = await Promise.all([
+  
+        axios.get(
+          `http://localhost:5001/api/xgboost/predictions?period=${selectedPeriod}`
+        ),
+  
+        axios.get(
+          `http://localhost:5001/api/xgboost/trend?period=${selectedPeriod}`
+        ),
+  
+      ]);
+  
+      if (predictionResponse.data.status === "insufficient_data") {
+  
+        setPredictions([]);
+        setTrendData([]);
+        setMetrics({});
+  
+      } else {
+  
+        setPredictions(
+          predictionResponse.data.predictions
+        );
+  
+        setMetrics(
+          predictionResponse.data.metrics
+        );
+  
+        setTrendData(
+          trendResponse.data.trend
+        );
+  
+      }
+  
     } catch (err) {
+  
       console.error("Failed to fetch predictions:", err);
+  
+      setPredictions([]);
+      setTrendData([]);
+      setMetrics({});
+  
+    } finally {
+  
+      setLoading(false);
+  
     }
+  
   };
 
   return (
+
     <div className="flex min-h-screen bg-slate-100">
 
-      {/* Sidebar */}
-
       <Sidebar />
-
-      {/* Main Content */}
 
       <div className="flex-1 overflow-y-auto">
 
         <PredictionHeader
           selectedPeriod={selectedPeriod}
           setSelectedPeriod={setSelectedPeriod}
+          metrics={metrics}
         />
 
         {/* Trend */}
@@ -66,15 +130,17 @@ const PredictionDashboard = () => {
 
             <div className="flex-1">
 
-              <PredictionTrend
-                selectedPeriod={selectedPeriod}
-                selectedModules={selectedModules}
-                predictions={predictions}
-              />
+            <PredictionTrend
+  selectedPeriod={selectedPeriod}
+  selectedModules={selectedModules}
+  trendData={trendData}
+  loading={loading}
+/>
 
             </div>
 
             <ModuleMultiSelect
+              predictions={predictions}
               selectedModules={selectedModules}
               setSelectedModules={setSelectedModules}
             />
@@ -83,24 +149,16 @@ const PredictionDashboard = () => {
 
         </div>
 
-        {/* Middle Row */}
+        {/* Module Overview + Recommendation */}
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 px-8 mt-8">
 
-          <div className="xl:col-span-3">
+          <div className="xl:col-span-7">
 
-            <ModuleSelector
+            <ModuleOverview
+              predictions={predictions}
               selectedModule={selectedModule}
               setSelectedModule={setSelectedModule}
-            />
-
-          </div>
-
-          <div className="xl:col-span-4">
-
-            <FuturePredictions
-              selectedModule={selectedModule}
-              predictions={predictions}
             />
 
           </div>
@@ -116,13 +174,14 @@ const PredictionDashboard = () => {
 
         </div>
 
-        {/* Bottom */}
+        {/* Summary */}
 
         <div className="px-8 mt-8 mb-8">
 
           <PredictionSummary
-            selectedModule={selectedModule}
             predictions={predictions}
+            selectedModule={selectedModule}
+            metrics={metrics}
           />
 
         </div>
@@ -130,7 +189,9 @@ const PredictionDashboard = () => {
       </div>
 
     </div>
+
   );
+
 };
 
 export default PredictionDashboard;

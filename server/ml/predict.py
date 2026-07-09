@@ -194,7 +194,31 @@ for module_name in modules["feature_name"]:
 
     prediction = float(model.predict(input_df)[0])
 
-    difference = round(prediction - current["peak_concurrent"])
+    # ----------------------------------
+    # Derived Metrics
+    # ----------------------------------
+
+    ratio = (
+        prediction / current["peak_concurrent"]
+        if current["peak_concurrent"] > 0
+        else 1
+    )
+
+    predicted_out = round(
+        current["out_count"] * ratio
+    )
+
+    predicted_denied = round(
+        current["denied_count"] * ratio
+    )
+
+    predicted_users = round(
+        current["unique_users"] * ratio
+    )
+
+    difference = round(
+        prediction - current["peak_concurrent"]
+    )
 
     change = (
         (prediction - current["peak_concurrent"])
@@ -204,28 +228,53 @@ for module_name in modules["feature_name"]:
     if change > 10:
         recommendation = "Increase Licenses"
         priority = "High"
+
     elif change < -10:
         recommendation = "Reduce Licenses"
         priority = "Low"
+
     else:
         recommendation = "Maintain Current Licenses"
         priority = "Medium"
 
     results.append({
+
         "module": module_name,
+
         "currentPeak": int(current["peak_concurrent"]),
         "predictedPeak": round(prediction),
+
+        "currentOut": int(current["out_count"]),
+        "predictedOut": predicted_out,
+
+        "currentDenied": int(current["denied_count"]),
+        "predictedDenied": predicted_denied,
+
+        "currentUsers": int(current["unique_users"]),
+        "predictedUsers": predicted_users,
+
         "difference": difference,
         "change": round(change, 2),
+
         "recommendation": recommendation,
         "priority": priority,
+
     })
 
+
+# ----------------------------------
+# Sort Predictions
+# ----------------------------------
 
 results.sort(
     key=lambda x: x["predictedPeak"],
     reverse=True,
 )
+
+
+# ----------------------------------
+# Output JSON
+# ----------------------------------
 
 print(json.dumps({
     "period": period,
