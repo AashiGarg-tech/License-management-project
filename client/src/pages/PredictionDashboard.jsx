@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 import Sidebar from "../components/mscdashboard/Sidebar";
 
@@ -22,6 +23,24 @@ const PredictionDashboard = () => {
 
   const [selectedModule, setSelectedModule] =
     useState("ADAMS_View");
+
+  const [predictions, setPredictions] = useState([]);
+
+  useEffect(() => {
+    fetchPredictions();
+  }, []);
+
+  const fetchPredictions = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5001/api/xgboost/predictions"
+      );
+
+      setPredictions(response.data);
+    } catch (err) {
+      console.error("Failed to fetch predictions:", err);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-slate-100">
@@ -50,6 +69,7 @@ const PredictionDashboard = () => {
               <PredictionTrend
                 selectedPeriod={selectedPeriod}
                 selectedModules={selectedModules}
+                predictions={predictions}
               />
 
             </div>
@@ -67,26 +87,34 @@ const PredictionDashboard = () => {
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 px-8 mt-8">
 
-  <div className="xl:col-span-3">
-    <ModuleSelector
-      selectedModule={selectedModule}
-      setSelectedModule={setSelectedModule}
-    />
-  </div>
+          <div className="xl:col-span-3">
 
-  <div className="xl:col-span-4">
-    <FuturePredictions
-      selectedModule={selectedModule}
-    />
-  </div>
+            <ModuleSelector
+              selectedModule={selectedModule}
+              setSelectedModule={setSelectedModule}
+            />
 
-  <div className="xl:col-span-5">
-    <RecommendationCard
-      selectedModule={selectedModule}
-    />
-  </div>
+          </div>
 
-</div>
+          <div className="xl:col-span-4">
+
+            <FuturePredictions
+              selectedModule={selectedModule}
+              predictions={predictions}
+            />
+
+          </div>
+
+          <div className="xl:col-span-5">
+
+            <RecommendationCard
+              selectedModule={selectedModule}
+              predictions={predictions}
+            />
+
+          </div>
+
+        </div>
 
         {/* Bottom */}
 
@@ -94,6 +122,7 @@ const PredictionDashboard = () => {
 
           <PredictionSummary
             selectedModule={selectedModule}
+            predictions={predictions}
           />
 
         </div>

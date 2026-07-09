@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import dashboardRoutes from "./routes/dashboard.js";
-
+import xgboostRoutes from "./routes/xgboostRoutes.js";
 import authRoutes from "./routes/auth.js";
 import licenseRoutes from "./routes/license.js";
 
@@ -16,6 +16,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/license", licenseRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/xgboost", xgboostRoutes);
 app.get("/", (req, res) => {
   res.send("API running");
 });

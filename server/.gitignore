@@ -3,4 +3,5 @@
 node_modules
 venv/
 scripts/
-ml/
+ml/data
+ml/models
